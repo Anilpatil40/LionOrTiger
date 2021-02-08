@@ -6,6 +6,7 @@ import androidx.gridlayout.widget.GridLayout;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -14,6 +15,8 @@ public class MainActivity extends AppCompatActivity{
     private final String player1 = "Lion", player2 = "Tiger";
     private Player[] allPlaces = new Player[9];
     private Player currentPlayer = Player.ONE;
+    private boolean isAnimationRunning = false;
+    private static final int ANIMATION_DURATION = 300;
     private boolean gameOver = false;
     private final int[][] possibles = {{0,1,2},{3,4,5},{6,7,8},
                                     {0,3,6},{1,4,7},{2,5,8},
@@ -47,6 +50,10 @@ public class MainActivity extends AppCompatActivity{
 
     public void tappedImage(View imageView){
 
+        if (isAnimationRunning){
+            return;
+        }
+
         ImageView image = (ImageView)imageView;
         int imgTag = Integer.parseInt(image.getTag().toString());
         if(allPlaces[imgTag] != Player.EMPTY || gameOver){
@@ -57,7 +64,9 @@ public class MainActivity extends AppCompatActivity{
         float y = image.getScaleY();
         image.setScaleX(0);
         image.setScaleY(0);
-        image.animate().scaleX(x).scaleY(y).setDuration(500);
+        image.animate().scaleX(x).scaleY(y).setDuration(ANIMATION_DURATION);
+
+        isAnimationRunning = true;
 
         if(currentPlayer == Player.ONE){
             image.setImageResource(R.mipmap.lion);
@@ -68,6 +77,17 @@ public class MainActivity extends AppCompatActivity{
             allPlaces[imgTag] = Player.TWO;
         }
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isAnimationRunning = false;
+                onAnimationComplete();
+            }
+        },ANIMATION_DURATION);
+
+    }
+
+    public void onAnimationComplete(){
         for(int[] value : possibles){
             if(allPlaces[value[0]]==currentPlayer && allPlaces[value[1]]==currentPlayer && allPlaces[value[2]]==currentPlayer){
                 gameOver = true;
